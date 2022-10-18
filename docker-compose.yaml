@@ -1,0 +1,44 @@
+version: "3.7"
+services:
+  db:
+    image: mysql:8.0.19
+    ports:
+      - 3309:3306
+    container_name: universidad-db-users
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: my-secret-pw
+    networks:
+      - micro-user
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:5.0.2
+    ports:
+      - 8083:80
+    environment:
+      PMA_HOST: db
+    depends_on:
+      - db
+    volumes:
+      - ./data:/var/lib/mysql
+    networks:
+      - micro-user
+  app:
+    image: wabox/codeigniter4:1.2
+    ports:
+      - 8003:80
+    container_name:  universidad-user
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    links:
+      - db
+    networks:
+      - micro-user
+
+networks:
+  micro-user:
+    driver: bridge
+volumes:
+  data:
